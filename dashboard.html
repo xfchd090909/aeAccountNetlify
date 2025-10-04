@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AE账号控制面板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            dark: '#1A1A2E',
+            light: '#F5F5F5',
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+    }
+  </style>
+  
+  <style>
+    /* 非法访问提示弹窗 */
+    .alert-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .alert-content {
+      background: #1A1A2E;
+      padding: 2rem;
+      border-radius: 1rem;
+      text-align: center;
+      border: 1px solid #165DFF;
+    }
+  </style>
+</head>
+<body class="font-inter bg-dark text-light min-h-screen flex overflow-hidden">
+  <!-- 非法访问提示（默认隐藏） -->
+  <div id="invalidAccessAlert" class="alert-modal hidden">
+    <div class="alert-content">
+      <i class="fa fa-exclamation-triangle text-5xl text-yellow-500 mb-4"></i>
+      <h2 class="text-2xl font-bold mb-2">非法操作，重新定向</h2>
+      <p class="text-gray-400 mb-4">您正在尝试非法访问控制面板</p>
+      <p class="text-primary">3秒后自动跳转...</p>
+    </div>
+  </div>
+
+  <!-- 左侧控制栏 -->
+  <div class="w-64 bg-dark/80 border-r border-white/10 h-screen flex flex-col">
+    <div class="p-6 border-b border-white/10">
+      <h1 class="text-xl font-bold text-primary">AE账号控制中心</h1>
+    </div>
+    
+    <nav class="flex-1 py-6">
+      <ul class="space-y-1 px-3">
+        <li>
+          <a href="#" class="control-link active flex items-center px-4 py-3 rounded-lg bg-primary/20 text-primary">
+            <i class="fa fa-home w-5 mr-3"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+            <i class="fa fa-user w-5 mr-3"></i>
+            <span>个人资料</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+            <i class="fa fa-cog w-5 mr-3"></i>
+            <span>账号设置</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+            <i class="fa fa-history w-5 mr-3"></i>
+            <span>操作记录</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  
+  <!-- 右侧预览栏 -->
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <!-- 顶部导航 -->
+    <div class="h-16 border-b border-white/10 flex items-center justify-between px-6">
+      <div class="flex items-center">
+        <h2 class="text-lg font-medium" id="previewTitle">首页</h2>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span class="text-gray-300" id="usernameDisplay"></span>
+        <button id="logoutBtn" class="text-gray-300 hover:text-white transition-colors">
+          <i class="fa fa-sign-out"></i>
+          <span class="ml-1">退出登录</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 预览内容区域 -->
+    <div class="flex-1 overflow-auto p-6" id="previewContent">
+      <div class="preview-section active" id="homeSection">
+        <h1 class="text-2xl font-bold mb-6">欢迎使用AE账号控制面板</h1>
+        <div class="bg-white/5 rounded-xl p-6">
+          <p class="text-gray-300">这里是您的账号管理中心，您可以在这里查看和管理您的账号信息。</p>
+        </div>
+      </div>
+      
+      <div class="preview-section hidden" id="profileSection">
+        <h1 class="text-2xl font-bold mb-6">个人资料</h1>
+      </div>
+      
+      <div class="preview-section hidden" id="settingsSection">
+        <h1 class="text-2xl font-bold mb-6">账号设置</h1>
+      </div>
+      
+      <div class="preview-section hidden" id="historySection">
+        <h1 class="text-2xl font-bold mb-6">操作记录</h1>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 增强版验证机制（三重验证）
+    function validateAccess() {
+      try {
+        // 1. 验证认证信息是否存在
+        const authStr = localStorage.getItem('aeAuth');
+        if (!authStr) return false;
+        
+        // 2. 验证认证信息格式和有效性
+        const auth = JSON.parse(authStr);
+        if (!auth.username || !auth.token || !auth.timestamp || !auth.expiresIn) {
+          return false;
+        }
+        
+        // 3. 验证令牌格式（解码校验）
+        try {
+          const decodedToken = atob(auth.token);
+          const [tokenUsername, tokenTimestamp] = decodedToken.split(':');
+          // 校验令牌中的用户名与存储的用户名一致
+          if (tokenUsername !== auth.username) return false;
+          // 校验令牌中的时间戳格式
+          if (isNaN(parseInt(tokenTimestamp))) return false;
+        } catch (e) {
+          return false; // 令牌解码失败
+        }
+        
+        // 4. 验证是否过期（当前时间 < 登录时间 + 有效期）
+        const now = Date.now();
+        if (now > auth.timestamp + auth.expiresIn) {
+          return false; // 已过期
+        }
+        
+        return true; // 所有验证通过
+      } catch (e) {
+        return false; // 任何步骤出错均视为无效
+      }
+    }
+    
+    // 页面加载时执行验证
+    document.addEventListener('DOMContentLoaded', function() {
+      const isAccessValid = validateAccess();
+      const alertModal = document.getElementById('invalidAccessAlert');
+      
+      if (!isAccessValid) {
+        // 非法访问：显示提示并倒计时跳转
+        alertModal.classList.remove('hidden');
+        let countdown = 3;
+        const countdownEl = alertModal.querySelector('p.text-primary');
+        
+        const timer = setInterval(() => {
+          countdown--;
+          countdownEl.textContent = `${countdown}秒后自动跳转...`;
+          if (countdown <= 0) {
+            clearInterval(timer);
+            window.location.href = 'index.html';
+          }
+        }, 1000);
+        return;
+      }
+      
+      // 验证通过：初始化页面
+      const auth = JSON.parse(localStorage.getItem('aeAuth'));
+      document.getElementById('usernameDisplay').textContent = auth.username;
+      
+      // 退出登录
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('aeAuth');
+        window.location.href = 'index.html';
+      });
+      
+      // 控制栏切换
+      const controlLinks = document.querySelectorAll('.control-link');
+      const previewSections = document.querySelectorAll('.preview-section');
+      const previewTitle = document.getElementById('previewTitle');
+      
+      controlLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          controlLinks.forEach(l => l.classList.remove('active', 'bg-primary/20', 'text-primary'));
+          controlLinks.forEach(l => l.classList.add('text-gray-300', 'hover:text-white'));
+          previewSections.forEach(s => s.classList.add('hidden'));
+          
+          this.classList.add('active', 'bg-primary/20', 'text-primary');
+          this.classList.remove('text-gray-300', 'hover:text-white');
+          
+          const sectionName = this.querySelector('span').textContent;
+          previewTitle.textContent = sectionName;
+          
+          const sectionMap = {
+            '首页': 'homeSection',
+            '个人资料': 'profileSection',
+            '账号设置': 'settingsSection',
+            '操作记录': 'historySection'
+          };
+          document.getElementById(sectionMap[sectionName]).classList.remove('hidden');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

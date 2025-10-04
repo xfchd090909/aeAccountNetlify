@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AE 账号登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .glass {
+                background: rgba(255, 255, 255, 0.25);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .error-input {
+                border-color: #ff4d4f !important;
+            }
+            .error-message {
+                color: #ff4d4f;
+                font-size: 0.875rem;
+                margin-top: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-900 min-h-screen overflow-x-hidden">
+    <!-- 粒子背景 -->
+    <canvas id="particles-js" class="absolute top-0 left-0 w-full h-full"></canvas>
+
+    <!-- 自定义弹窗 -->
+    <div id="customModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modalOverlay"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300">
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-800 mb-4">提示</h3>
+            <p id="modalMessage" class="text-gray-600 mb-6"></p>
+            <div class="flex justify-end">
+                <button id="modalConfirm" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-12 relative z-10">
+        <div class="max-w-md mx-auto">
+            <div class="text-center mb-8">
+                <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-white text-shadow">AE 账号登录</h1>
+                <p class="text-blue-100 mt-2">欢迎回来，请登录您的账号</p>
+            </div>
+
+            <div class="glass rounded-2xl p-6 shadow-xl">
+                <!-- 登录选项卡 -->
+                <div class="flex mb-6">
+                    <button id="emailLoginBtn" class="flex-1 py-2 px-4 bg-primary text-white rounded-l-lg font-medium transition-all duration-300">邮箱登录</button>
+                    <button id="aeLoginBtn" class="flex-1 py-2 px-4 bg-transparent text-white hover:bg-primary/20 rounded-r-lg font-medium transition-all duration-300">AE 账号登录</button>
+                </div>
+
+                <!-- 邮箱登录表单 -->
+                <div id="emailLoginForm">
+                    <div class="mb-4">
+                        <label for="email" class="block text-white mb-2">邮箱(仅限163、Gmail邮箱)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white/70">
+                                <i class="fa fa-envelope-o"></i>
+                            </span>
+                            <input type="email" id="email" class="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-white/50" placeholder="请输入您的邮箱">
+                        </div>
+                        <div id="emailError" class="error-message hidden"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="emailCode" class="block text-white mb-2">邮箱验证码</label>
+                        <div class="flex gap-2">
+                            <div class="relative flex-1">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white/70">
+                                    <i class="fa fa-shield"></i>
+                                </span>
+                                <input type="text" id="emailCode" class="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-white/50" placeholder="请输入验证码">
+                            </div>
+                            <button id="getCodeBtn" class="py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-300 whitespace-nowrap">获取验证码</button>
+                        </div>
+                        <div id="emailCodeError" class="error-message hidden"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="mathCaptchaEmail" class="block text-white mb-2">数学验证码</label>
+                        <div class="flex gap-2 items-center">
+                            <div class="relative flex-1">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white/70">
+                                    <i class="fa fa-calculator"></i>
+                                </span>
+                                <input type="text" id="mathCaptchaEmail" class="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-white/50" placeholder="请计算结果">
+                            </div>
+                            <div id="mathExpressionEmail" class="py-2 px-4 bg-white/10 rounded-lg text-white cursor-pointer">3 + 5 = ?</div>
+                        </div>
+                        <div id="mathCaptchaEmailError" class="error-message hidden"></div>
+                    </div>
+
+                    <div class="mb-6 flex items-center">
+                        <input type="checkbox" id="rememberMe" class="mr-2 h-4 w-4 text-primary rounded">
+                        <label for="rememberMe" class="text-white">记住我</label>
+                    </div>
+
+                    <button id="emailSubmitBtn" class="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-300 font-medium">登录</button>
+                </div>
+
+                <!-- AE 账号登录表单 -->
+                <div id="aeLoginForm" class="hidden">
+                    <div class="mb-4">
+                        <label for="aeAccount" class="block text-white mb-2">AE 账号</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white/70">
+                                <i class="fa fa-id-card-o"></i>
+                            </span>
+                            <input type="text" id="aeAccount" class="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-white/50" placeholder="请输入 AE 账号">
+                        </div>
+                        <div id="accountError" class="error-message hidden"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="aePassword" class="block text-white mb-2">密码</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white/70">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input type="password" id="aePassword" class="w-full pl-10 pr-10 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-white/50" placeholder="请输入密码">
+                            <button id="toggleAePassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-white/70 hover:text-white transition-colors duration-300">
+                                <i class="fa fa-eye-slash"></i>
+                            </button>
+                        </div>
+                        <div id="passwordError" class="error-message hidden"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="mathCaptcha" class="block text-white mb-2">数学验证码</label>
+                        <div class="flex gap-2 items-center">
+                            <div class="relative flex-1">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white/70">
+                                    <i class="fa fa-calculator"></i>
+                                </span>
+                                <input type="text" id="mathCaptcha" class="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-white/50" placeholder="请计算结果">
+                            </div>
+                            <div id="mathExpression" class="py-2 px-4 bg-white/10 rounded-lg text-white cursor-pointer">3 + 5 = ?</div>
+                        </div>
+                        <div id="mathCaptchaError" class="error-message hidden"></div>
+                    </div>
+
+                    <div class="mb-6 flex items-center">
+                        <input type="checkbox" id="aeRememberMe" class="mr-2 h-4 w-4 text-primary rounded">
+                        <label for="aeRememberMe" class="text-white">记住我</label>
+                    </div>
+
+                    <button id="aeSubmitBtn" class="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all duration-300 font-medium">登录</button>
+                </div>
+
+            </div>
+
+            <div class="text-center mt-6 text-blue-100">
+                <p>© 2025 AE 账号管理系统 - 版权所有</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let correctAnswerEmail = 8; // 邮箱登录数学验证码答案
+        let correctAnswer = 8;     // AE账号登录数学验证码答案
+
+        // 自定义弹窗函数
+        function showModal(title, message) {
+            const modal = document.getElementById('customModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.querySelector('div:nth-child(2)').classList.add('modal-enter-active'), 10);
+        }
+        
+        function hideModal() {
+            const modal = document.getElementById('customModal');
+            const modalContent = modal.querySelector('div:nth-child(2)');
+            modalContent.classList.remove('modal-enter-active');
+            modalContent.classList.add('modal-exit-active');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modalContent.classList.remove('modal-exit-active');
+            }, 300);
+        }
+
+        // 显示错误信息
+        function showError(elementId, message) {
+            const inputElement = document.getElementById(elementId);
+            const errorElement = document.getElementById(`${elementId}Error`);
+            if (inputElement) inputElement.classList.add('error-input');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+            }
+        }
+        
+        // 清除错误信息
+        function clearError(elementId) {
+            const inputElement = document.getElementById(elementId);
+            const errorElement = document.getElementById(`${elementId}Error`);
+            if (inputElement) inputElement.classList.remove('error-input');
+            if (errorElement) {
+                errorElement.textContent = '';
+                errorElement.classList.add('hidden');
+            }
+        }
+
+        // 绑定弹窗关闭事件
+        document.getElementById('modalConfirm').addEventListener('click', hideModal);
+        document.getElementById('modalOverlay').addEventListener('click', hideModal);
+
+        // 生成随机数学表达式
+        function generateMathExpression(targetElement, answerVariable) {
+            const a = Math.floor(Math.random() * 10) + 1;
+            const b = Math.floor(Math.random() * 10) + 1;
+            const operator = Math.random() > 0.5 ? '+' : '-';
+            const result = operator === '+' ? a + b : Math.max(a - b, 0);
+            document.getElementById(targetElement).textContent = `${a} ${operator} ${b} = ?`;
+            window[answerVariable] = result;
+        }
+
+        // 初始化数学验证码
+        generateMathExpression('mathExpression', 'correctAnswer');
+        generateMathExpression('mathExpressionEmail', 'correctAnswerEmail');
+
+        // 切换登录选项卡
+        document.getElementById('emailLoginBtn').addEventListener('click', function() {
+            document.getElementById('emailLoginForm').classList.remove('hidden');
+            document.getElementById('aeLoginForm').classList.add('hidden');
+            this.classList.add('bg-primary');
+            this.classList.remove('bg-transparent', 'hover:bg-primary/20');
+            document.getElementById('aeLoginBtn').classList.remove('bg-primary');
+            document.getElementById('aeLoginBtn').classList.add('bg-transparent', 'hover:bg-primary/20');
+        });
+
+        document.getElementById('aeLoginBtn').addEventListener('click', function() {
+            document.getElementById('emailLoginForm').classList.add('hidden');
+            document.getElementById('aeLoginForm').classList.remove('hidden');
+            this.classList.add('bg-primary');
+            this.classList.remove('bg-transparent', 'hover:bg-primary/20');
+            document.getElementById('emailLoginBtn').classList.remove('bg-primary');
+            document.getElementById('emailLoginBtn').classList.add('bg-transparent', 'hover:bg-primary/20');
+        });
+
+        // 密码显示切换
+        document.getElementById('toggleAePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('aePassword');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
+        });
+
+        // 数学验证码刷新
+        document.getElementById('mathExpression').addEventListener('click', () => generateMathExpression('mathExpression', 'correctAnswer'));
+        document.getElementById('mathExpressionEmail').addEventListener('click', () => generateMathExpression('mathExpressionEmail', 'correctAnswerEmail'));
+
+        // 邮箱格式验证
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@(163\.com|gmail\.com)$/i;
+            return emailRegex.test(email);
+        }
+
+        // 获取邮箱验证码
+        document.getElementById('getCodeBtn').addEventListener('click', async function() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) return showError('email', '请输入邮箱');
+            if (!isValidEmail(email)) return showError('email', '请输入有效的163或Gmail邮箱');
+
+            const button = this;
+            button.disabled = true;
+            button.textContent = '发送中...';
+
+            try {
+                const res = await fetch("/.netlify/functions/send-email", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showModal('成功', data.message);
+                    let countdown = 60;
+                    const timer = setInterval(() => {
+                        countdown--;
+                        button.textContent = `${countdown}s 后重试`;
+                        if (countdown <= 0) {
+                            clearInterval(timer);
+                            button.disabled = false;
+                            button.textContent = '获取验证码';
+                        }
+                    }, 1000);
+                } else {
+                    showModal('错误', data.message);
+                    button.disabled = false;
+                    button.textContent = '获取验证码';
+                }
+            } catch (error) {
+                showModal('错误', '请求失败，请稍后重试');
+                button.disabled = false;
+                button.textContent = '获取验证码';
+            }
+        });
+
+        // 邮箱登录表单提交（调用 Redis 验证验证码）
+        document.getElementById('emailSubmitBtn').addEventListener('click', async function() {
+            const email = document.getElementById('email').value.trim();
+            const code = document.getElementById('emailCode').value.trim();
+            const captcha = document.getElementById('mathCaptchaEmail').value.trim();
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            clearError('email');
+            clearError('emailCode');
+            clearError('mathCaptchaEmail');
+
+            if (!email) return showError('email', '请输入邮箱');
+            if (!isValidEmail(email)) return showError('email', '请输入有效的163或Gmail邮箱');
+            if (!code) return showError('emailCode', '请输入邮箱验证码');
+            if (!captcha) return showError('mathCaptchaEmail', '请输入数学验证码');
+            if (parseInt(captcha) !== correctAnswerEmail) {
+                showError('mathCaptchaEmail', '数学验证码错误');
+                generateMathExpression('mathExpressionEmail', 'correctAnswerEmail');
+                return;
+            }
+
+            const button = this;
+            button.disabled = true;
+            button.textContent = '验证中...';
+
+            try {
+                const res = await fetch("/.netlify/functions/verify-code", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, code })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    const storage = rememberMe ? localStorage : sessionStorage;
+                    storage.setItem('aeAuth', JSON.stringify({
+                        username: email.split('@')[0],
+                        token: btoa(`${email}:${Date.now()}`),
+                        timestamp: Date.now(),
+                        expiresIn: 3600000 // 1小时
+                    }));
+                    showModal('成功', '登录成功！即将跳转到控制台...');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                } else {
+                    showModal('错误', data.message);
+                    button.disabled = false;
+                    button.textContent = '登录';
+                }
+            } catch (error) {
+                showModal('错误', '验证失败，请稍后重试');
+                button.disabled = false;
+                button.textContent = '登录';
+            }
+        });
+
+        // AE 账号登录表单提交
+        document.getElementById('aeSubmitBtn').addEventListener('click', function() {
+            const account = document.getElementById('aeAccount').value.trim();
+            const password = document.getElementById('aePassword').value;
+            const captcha = document.getElementById('mathCaptcha').value.trim();
+            const rememberMe = document.getElementById('aeRememberMe').checked;
+
+            clearError('aeAccount');
+            clearError('aePassword');
+            clearError('mathCaptcha');
+
+            if (!account) return showError('aeAccount', '请输入AE账号');
+            if (!password) return showError('aePassword', '请输入密码');
+            if (!captcha) return showError('mathCaptcha', '请输入数学验证码');
+            if (parseInt(captcha) !== correctAnswer) {
+                showError('mathCaptcha', '数学验证码错误');
+                generateMathExpression('mathExpression', 'correctAnswer');
+                return;
+            }
+
+            const storage = rememberMe ? localStorage : sessionStorage;
+            storage.setItem('aeAuth', JSON.stringify({
+                username: account,
+                token: btoa(`${account}:${Date.now()}`),
+                timestamp: Date.now(),
+                expiresIn: 3600000
+            }));
+
+            showModal('成功', '登录成功！即将跳转到控制台...');
+            setTimeout(() => window.location.href = 'dashboard.html', 1500);
+        });
+    </script>
+</body>
+</html>
