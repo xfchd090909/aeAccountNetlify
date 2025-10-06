@@ -101,20 +101,6 @@
                         <div id="emailCodeError" class="error-message hidden"></div>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="mathCaptchaEmail" class="block text-white mb-2">数学验证码</label>
-                        <div class="flex gap-2 items-center">
-                            <div class="relative flex-1">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white/70">
-                                    <i class="fa fa-calculator"></i>
-                                </span>
-                                <input type="text" id="mathCaptchaEmail" class="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-white placeholder-white/50" placeholder="请计算结果">
-                            </div>
-                            <div id="mathExpressionEmail" class="py-2 px-4 bg-white/10 rounded-lg text-white cursor-pointer">3 + 5 = ?</div>
-                        </div>
-                        <div id="mathCaptchaEmailError" class="error-message hidden"></div>
-                    </div>
-
                     <div class="mb-6 flex items-center">
                         <input type="checkbox" id="rememberMe" class="mr-2 h-4 w-4 text-primary rounded">
                         <label for="rememberMe" class="text-white">记住我</label>
@@ -181,8 +167,7 @@
     </div>
 
     <script>
-        // 全局变量
-        let correctAnswerEmail = 8; // 邮箱登录数学验证码答案
+        // 全局变量（仅保留AE账号登录的数学验证码答案）
         let correctAnswer = 8;     // AE账号登录数学验证码答案
 
         // 自定义弹窗函数
@@ -233,7 +218,7 @@
         document.getElementById('modalConfirm').addEventListener('click', hideModal);
         document.getElementById('modalOverlay').addEventListener('click', hideModal);
 
-        // 生成随机数学表达式
+        // 生成随机数学表达式（仅用于AE账号登录）
         function generateMathExpression(targetElement, answerVariable) {
             const a = Math.floor(Math.random() * 10) + 1;
             const b = Math.floor(Math.random() * 10) + 1;
@@ -243,9 +228,8 @@
             window[answerVariable] = result;
         }
 
-        // 初始化数学验证码
+        // 初始化数学验证码（仅初始化AE账号登录的）
         generateMathExpression('mathExpression', 'correctAnswer');
-        generateMathExpression('mathExpressionEmail', 'correctAnswerEmail');
 
         // 切换登录选项卡
         document.getElementById('emailLoginBtn').addEventListener('click', function() {
@@ -274,9 +258,8 @@
             this.innerHTML = type === 'password' ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
         });
 
-        // 数学验证码刷新
+        // 数学验证码刷新（仅保留AE账号登录的）
         document.getElementById('mathExpression').addEventListener('click', () => generateMathExpression('mathExpression', 'correctAnswer'));
-        document.getElementById('mathExpressionEmail').addEventListener('click', () => generateMathExpression('mathExpressionEmail', 'correctAnswerEmail'));
 
         // 邮箱格式验证
         function isValidEmail(email) {
@@ -325,26 +308,18 @@
             }
         });
 
-        // 邮箱登录表单提交（调用 Redis 验证验证码）
+        // 邮箱登录表单提交（仅保留邮箱验证码验证）
         document.getElementById('emailSubmitBtn').addEventListener('click', async function() {
             const email = document.getElementById('email').value.trim();
             const code = document.getElementById('emailCode').value.trim();
-            const captcha = document.getElementById('mathCaptchaEmail').value.trim();
             const rememberMe = document.getElementById('rememberMe').checked;
 
             clearError('email');
             clearError('emailCode');
-            clearError('mathCaptchaEmail');
 
             if (!email) return showError('email', '请输入邮箱');
             if (!isValidEmail(email)) return showError('email', '请输入有效的163或Gmail邮箱');
             if (!code) return showError('emailCode', '请输入邮箱验证码');
-            if (!captcha) return showError('mathCaptchaEmail', '请输入数学验证码');
-            if (parseInt(captcha) !== correctAnswerEmail) {
-                showError('mathCaptchaEmail', '数学验证码错误');
-                generateMathExpression('mathExpressionEmail', 'correctAnswerEmail');
-                return;
-            }
 
             const button = this;
             button.disabled = true;
