@@ -37,228 +37,124 @@
       }
     }
   </style>
-  
-  <style>
-    /* 加载与错误提示 */
-    .loading-modal, .error-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-content {
-      background: #1A1A2E;
-      padding: 2rem;
-      border-radius: 1rem;
-      text-align: center;
-      border: 1px solid #165DFF;
-    }
-    .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.1);
-      border-left-color: #165DFF;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
 </head>
 <body class="font-inter bg-dark text-light min-h-screen flex overflow-hidden">
-  <!-- 加载提示（默认显示） -->
-  <div id="loadingModal" class="loading-modal">
-    <div class="modal-content">
-      <div class="spinner"></div>
-      <p class="text-primary">验证身份中...</p>
-    </div>
-  </div>
-
-  <!-- 错误提示（默认隐藏） -->
-  <div id="errorModal" class="error-modal hidden">
-    <div class="modal-content">
-      <i class="fa fa-exclamation-triangle text-5xl text-yellow-500 mb-4"></i>
-      <h2 class="text-2xl font-bold mb-2">身份验证失败</h2>
-      <p class="text-gray-400 mb-4">请重新登录后访问</p>
-      <p class="text-primary">3秒后自动跳转...</p>
-    </div>
-  </div>
-
-  <!-- 页面内容（默认隐藏，验证通过后显示） -->
-  <div id="dashboardContent" class="hidden w-full">
-    <!-- 左侧控制栏 -->
-    <div class="w-64 bg-dark/80 border-r border-white/10 h-screen flex flex-col">
-      <div class="p-6 border-b border-white/10">
-        <h1 class="text-xl font-bold text-primary">AE账号控制中心</h1>
-      </div>
-      
-      <nav class="flex-1 py-6">
-        <ul class="space-y-1 px-3">
-          <li>
-            <a href="#" class="control-link active flex items-center px-4 py-3 rounded-lg bg-primary/20 text-primary">
-              <i class="fa fa-home w-5 mr-3"></i>
-              <span>首页</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
-              <i class="fa fa-user w-5 mr-3"></i>
-              <span>个人资料</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
-              <i class="fa fa-cog w-5 mr-3"></i>
-              <span>账号设置</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
-              <i class="fa fa-history w-5 mr-3"></i>
-              <span>操作记录</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
+  <!-- 左侧控制栏 -->
+  <div class="w-64 bg-dark/80 border-r border-white/10 h-screen flex flex-col">
+    <div class="p-6 border-b border-white/10">
+      <h1 class="text-xl font-bold text-primary">AE账号控制中心</h1>
     </div>
     
-    <!-- 右侧预览栏 -->
-    <div class="flex-1 flex flex-col h-screen overflow-hidden">
-      <!-- 顶部导航 -->
-      <div class="h-16 border-b border-white/10 flex items-center justify-between px-6">
-        <div class="flex items-center">
-          <h2 class="text-lg font-medium" id="previewTitle">首页</h2>
-        </div>
-        <div class="flex items-center space-x-4">
-          <span class="text-gray-300" id="usernameDisplay"></span>
-          <button id="logoutBtn" class="text-gray-300 hover:text-white transition-colors">
-            <i class="fa fa-sign-out"></i>
-            <span class="ml-1">退出登录</span>
-          </button>
+    <nav class="flex-1 py-6">
+      <ul class="space-y-1 px-3">
+        <li>
+          <a href="#" class="control-link active flex items-center px-4 py-3 rounded-lg bg-primary/20 text-primary">
+            <i class="fa fa-home w-5 mr-3"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+            <i class="fa fa-user w-5 mr-3"></i>
+            <span>个人资料</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+            <i class="fa fa-cog w-5 mr-3"></i>
+            <span>账号设置</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="control-link flex items-center px-4 py-3 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors">
+            <i class="fa fa-history w-5 mr-3"></i>
+            <span>操作记录</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  
+  <!-- 右侧预览栏 -->
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <!-- 顶部导航 -->
+    <div class="h-16 border-b border-white/10 flex items-center justify-between px-6">
+      <div class="flex items-center">
+        <h2 class="text-lg font-medium" id="previewTitle">首页</h2>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span class="text-gray-300" id="usernameDisplay"></span>
+        <button id="logoutBtn" class="text-gray-300 hover:text-white transition-colors">
+          <i class="fa fa-sign-out"></i>
+          <span class="ml-1">退出登录</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 预览内容区域 -->
+    <div class="flex-1 overflow-auto p-6" id="previewContent">
+      <div class="preview-section active" id="homeSection">
+        <h1 class="text-2xl font-bold mb-6">欢迎使用AE账号控制面板</h1>
+        <div class="bg-white/5 rounded-xl p-6">
+          <p class="text-gray-300">这里是您的账号管理中心，您可以在这里查看和管理您的账号信息。</p>
         </div>
       </div>
       
-      <!-- 预览内容区域 -->
-      <div class="flex-1 overflow-auto p-6" id="previewContent">
-        <div class="preview-section active" id="homeSection">
-          <h1 class="text-2xl font-bold mb-6">欢迎使用AE账号控制面板</h1>
-          <div class="bg-white/5 rounded-xl p-6">
-            <p class="text-gray-300">这里是您的账号管理中心，您可以在这里查看和管理您的账号信息。</p>
-          </div>
-        </div>
-        
-        <div class="preview-section hidden" id="profileSection">
-          <h1 class="text-2xl font-bold mb-6">个人资料</h1>
-        </div>
-        
-        <div class="preview-section hidden" id="settingsSection">
-          <h1 class="text-2xl font-bold mb-6">账号设置</h1>
-        </div>
-        
-        <div class="preview-section hidden" id="historySection">
-          <h1 class="text-2xl font-bold mb-6">操作记录</h1>
-        </div>
+      <div class="preview-section hidden" id="profileSection">
+        <h1 class="text-2xl font-bold mb-6">个人资料</h1>
+      </div>
+      
+      <div class="preview-section hidden" id="settingsSection">
+        <h1 class="text-2xl font-bold mb-6">账号设置</h1>
+      </div>
+      
+      <div class="preview-section hidden" id="historySection">
+        <h1 class="text-2xl font-bold mb-6">操作记录</h1>
       </div>
     </div>
   </div>
 
   <script>
-    // 后端验证接口（核心验证逻辑）
-    async function verifyAuth() {
-      try {
-        // 调用后端验证接口（携带 httpOnly Cookie）
-        const response = await fetch("/.netlify/functions/check-auth", {
-          method: "GET",
-          credentials: "include" // 关键：允许跨域携带Cookie
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化页面（假设认证信息存在）
+      const authStr = localStorage.getItem('aeAuth');
+      const auth = authStr ? JSON.parse(authStr) : { username: '访客' };
+      document.getElementById('usernameDisplay').textContent = auth.username;
+      
+      // 退出登录
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('aeAuth');
+        window.location.href = 'index.html';
+      });
+      
+      // 控制栏切换
+      const controlLinks = document.querySelectorAll('.control-link');
+      const previewSections = document.querySelectorAll('.preview-section');
+      const previewTitle = document.getElementById('previewTitle');
+      
+      controlLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          controlLinks.forEach(l => l.classList.remove('active', 'bg-primary/20', 'text-primary'));
+          controlLinks.forEach(l => l.classList.add('text-gray-300', 'hover:text-white'));
+          previewSections.forEach(s => s.classList.add('hidden'));
+          
+          this.classList.add('active', 'bg-primary/20', 'text-primary');
+          this.classList.remove('text-gray-300', 'hover:text-white');
+          
+          const sectionName = this.querySelector('span').textContent;
+          previewTitle.textContent = sectionName;
+          
+          const sectionMap = {
+            '首页': 'homeSection',
+            '个人资料': 'profileSection',
+            '账号设置': 'settingsSection',
+            '操作记录': 'historySection'
+          };
+          document.getElementById(sectionMap[sectionName]).classList.remove('hidden');
         });
-
-        if (!response.ok) {
-          throw new Error("验证失败");
-        }
-
-        // 验证通过，获取用户信息
-        const { username } = await response.json();
-        return { valid: true, username };
-      } catch (error) {
-        return { valid: false };
-      }
-    }
-
-    // 页面初始化
-    document.addEventListener('DOMContentLoaded', async function() {
-      const loadingModal = document.getElementById('loadingModal');
-      const errorModal = document.getElementById('errorModal');
-      const dashboardContent = document.getElementById('dashboardContent');
-
-      // 调用后端验证
-      const authResult = await verifyAuth();
-      loadingModal.classList.add('hidden');
-
-      if (authResult.valid) {
-        // 验证通过：显示页面内容
-        dashboardContent.classList.remove('hidden');
-        document.getElementById('usernameDisplay').textContent = authResult.username;
-
-        // 退出登录功能（调用后端接口清除Cookie）
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-          await fetch("/.netlify/functions/logout", {
-            method: "POST",
-            credentials: "include"
-          });
-          window.location.href = 'index.html';
-        });
-
-        // 控制栏切换逻辑（保持不变）
-        const controlLinks = document.querySelectorAll('.control-link');
-        const previewSections = document.querySelectorAll('.preview-section');
-        const previewTitle = document.getElementById('previewTitle');
-        
-        controlLinks.forEach(link => {
-          link.addEventListener('click', function(e) {
-            e.preventDefault();
-            controlLinks.forEach(l => l.classList.remove('active', 'bg-primary/20', 'text-primary'));
-            controlLinks.forEach(l => l.classList.add('text-gray-300', 'hover:text-white'));
-            previewSections.forEach(s => s.classList.add('hidden'));
-            
-            this.classList.add('active', 'bg-primary/20', 'text-primary');
-            this.classList.remove('text-gray-300', 'hover:text-white');
-            
-            const sectionName = this.querySelector('span').textContent;
-            previewTitle.textContent = sectionName;
-            
-            const sectionMap = {
-              '首页': 'homeSection',
-              '个人资料': 'profileSection',
-              '账号设置': 'settingsSection',
-              '操作记录': 'historySection'
-            };
-            document.getElementById(sectionMap[sectionName]).classList.remove('hidden');
-          });
-        });
-
-      } else {
-        // 验证失败：显示错误并跳转
-        errorModal.classList.remove('hidden');
-        let countdown = 3;
-        const countdownEl = errorModal.querySelector('p.text-primary');
-        
-        const timer = setInterval(() => {
-          countdown--;
-          countdownEl.textContent = `${countdown}秒后自动跳转...`;
-          if (countdown <= 0) {
-            clearInterval(timer);
-            window.location.href = 'index.html';
-          }
-        }, 1000);
-      }
+      });
     });
   </script>
 </body>
